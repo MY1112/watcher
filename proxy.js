@@ -1,5 +1,7 @@
 let data = { name: 'sam', age: 18 }
 let target = null
+let proxyData = data
+let deps = new Map()
 
 // Dep 类, 用于做依赖收集
 class Dep {
@@ -16,24 +18,25 @@ class Dep {
   }
 }
 
-// 对数据做监听
+
+// 为每个值设置一个依赖收集器
 Object.keys(data).forEach(key => {
-  // 保存初始值
-  var initValue = data[key]
-  // 生产依赖收集实例, 用于后续数据 get 时收集依赖
-  const dep = new Dep()
-  Object.defineProperty(data, key, {
-    get() {
-      dep.depend()
-      return initValue
-    },
-    set(newValue) {
-      initValue = newValue
-      dep.notify()
-    }
-  })
+  deps.set(key, new Dep())
 })
 
+// 对数据做监听
+data = new Proxy(proxyData, {
+  get(obj, key) {
+    deps.get(key).depend()
+    return obj[key]
+  },
+  set(obj, key, newValue) {
+    obj[key] = newValue
+    deps.get(key).notify()
+  }
+})
+
+// 触发器
 function watcher(func) {
   target = func
   target()
@@ -42,10 +45,10 @@ function watcher(func) {
 
 // 添加回调
 watcher(() => {
-  info = `my name is ${data.name}, and i'm ${data.age}`
+  let info = `my name is ${data.name}, and i'm ${data.age}`
   console.log(info)
 })
 watcher(() => {
-  info = `my age is ${data.age}, and my name is ${data.name}`
+  let info = `my age is ${data.age}, and my name is ${data.name}`
   console.log(info)
 })
