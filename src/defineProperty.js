@@ -1,20 +1,11 @@
+/**
+ * 待以后有空抽成库
+ */
+
+import Dep from './Dep'
+
 let data = { name: 'sam', age: 18 }
 let target = null
-
-// Dep 类, 用于做依赖收集
-class Dep {
-  constructor() {
-    this.subscribers = []
-  }
-  depend() {
-    if (target && !this.subscribers.includes(target)) {
-      this.subscribers.push(target)
-    }
-  }
-  notify() {
-    this.subscribers.forEach(callback => callback())
-  }
-}
 
 // 对数据做监听
 Object.keys(data).forEach(key => {
