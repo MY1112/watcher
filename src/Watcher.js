@@ -5,6 +5,20 @@ class Watcher {
     this.target = null
     let self = this
     let deps = new Map()
+    let handler = {
+      get(obj, key, receiver) {
+        if (typeof obj[key] === 'object' && obj[key] !== null) {
+          return new Proxy(obj[key], handler)
+        }
+        deps.get(key).depend(self.target)
+        return Reflect.get(obj, key, receiver)
+      },
+      set(obj, key, newValue, receiver) {
+        obj[key] = newValue
+        deps.get(key).notify(obj)
+        return Reflect.set(obj, key, newValue, receiver)
+      }
+    }
     Object.keys(data).forEach(key => {
       deps.set(key, new Dep())
     })
